@@ -2,6 +2,12 @@
 
 FileForge is a command-line file organization utility built primarily in **C++17**. It scans a folder, categorizes files, previews where they will go, organizes them into folders, identifies duplicate candidates, and can undo the most recent organization.
 
+## Why I Built This
+
+My computer was getting cluttered with downloads, duplicate files, old documents, and files spread across different folders. I wanted a simple way to see what was taking up space and organize everything without manually sorting through files one by one.
+
+I built FileForge to solve that problem for myself. It lets me scan a folder, understand how the files are organized, find possible duplicates, safely sort files by type, and undo the most recent organization if needed. Building it also gave me a practical way to learn more about C++ file handling and `std::filesystem`.
+
 ## Main language
 **C++**
 
