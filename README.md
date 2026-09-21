@@ -1,47 +1,35 @@
-# FileForge
+# FileForge — C++ File Organizer
 
-FileForge is a Python desktop application that helps organize cluttered folders, identify duplicate files, preview changes before moving anything, and undo the most recent organization.
+FileForge is a command-line file organization utility built primarily in **C++17**. It scans a folder, categorizes files, previews where they will go, organizes them into folders, identifies duplicate candidates, and can undo the most recent organization.
+
+## Main language
+**C++**
+
+It uses the C++17 standard library, especially `std::filesystem`, containers, streams, and file I/O. No Python packages or external dependencies are required.
 
 ## Features
+- Scan top-level files and show sizes/categories
+- Preview organization before changing files
+- Organize into Images, Documents, Videos, Audio, Archives, Code, and Other
+- Collision-safe file naming
+- Duplicate-candidate detection by file size
+- Undo the most recent organization using a local log
+- Storage summary
 
-- Choose and scan a folder through a desktop GUI
-- View file names, extensions, sizes, and categories
-- Organize files into Images, Documents, Videos, Audio, Archives, Code, and Other
-- Preview how many files will move into each category
-- Detect true duplicate files using SHA-256 hashes
-- Avoid overwriting files with duplicate names
-- Undo the most recent organization action
-- Display basic file and storage statistics
-- Unit tests for core file utilities
+Duplicate detection intentionally reports **candidates** when sizes match; it does not claim the files are byte-for-byte identical.
 
-## Technology
+## Compile
 
-- Python 3
-- Tkinter for the desktop interface
-- pathlib and shutil for filesystem operations
-- hashlib for duplicate detection
-- unittest for tests
-
-No third-party packages are required.
-
-## Run
-
-```bash
-python fileforge.py
+### Windows with g++
+```
+g++ -std=c++17 -O2 fileforge.cpp -o fileforge.exe
+fileforge.exe
 ```
 
-Choose a folder containing files, then use the buttons to scan, find duplicates, preview organization, organize, or undo.
-
-## Tests
-
-```bash
-python -m unittest
+### Linux/macOS
+```
+g++ -std=c++17 -O2 fileforge.cpp -o fileforge
+./fileforge
 ```
 
-## Safety
-
-FileForge does not automatically delete duplicates. Organization requires confirmation, existing filenames are protected from overwriting, and the last organization can be undone.
-
-## What This Project Demonstrates
-
-This project demonstrates Python desktop development, filesystem operations, hashing, data structures, defensive file handling, GUI event handling, and unit testing at a practical undergraduate-project scope.
+FileForge demonstrates practical use of C++ filesystem APIs, STL containers, path handling, error handling, and safe file operations.
