@@ -19,7 +19,9 @@ It uses the C++17 standard library, especially `std::filesystem`, containers, st
 - Organize into Images, Documents, Videos, Audio, Archives, Code, and Other
 - Collision-safe file naming
 - Duplicate-candidate detection by file size
-- Undo the most recent organization using a local log
+- Undo the most recent organization using a local log; incomplete restores keep pending entries for retry
+- Reject undo records that point outside the selected folder and skip symlinks
+- Refuse a new organization while an undo record exists
 - Storage summary
 
 Duplicate detection intentionally reports **candidates** when sizes match; it does not claim the files are byte-for-byte identical.
@@ -39,3 +41,9 @@ g++ -std=c++17 -O2 fileforge.cpp -o fileforge
 ```
 
 FileForge demonstrates practical use of C++ filesystem APIs, STL containers, path handling, error handling, and safe file operations.
+
+## Tests
+
+Compile using the command above, then run `python -m unittest discover -v` (Python 3). GitHub Actions compiles and runs these tests on each pull request.
+
+The undo log is stored in the selected folder. Keep it until you have restored the files you need; FileForge refuses to start a new organization while an undo record exists.
