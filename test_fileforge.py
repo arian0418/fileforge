@@ -18,6 +18,17 @@ class FileForgeTests(unittest.TestCase):
             self.assertEqual((folder / "a report.txt").read_text(), "one")
             self.assertFalse((folder / ".fileforge_undo.log").exists())
 
+    def test_exact_duplicates_ignore_same_size_different_content(self):
+        with tempfile.TemporaryDirectory() as location:
+            folder = pathlib.Path(location)
+            (folder / "first.bin").write_bytes(b"abcd")
+            (folder / "copy.bin").write_bytes(b"abcd")
+            (folder / "different.bin").write_bytes(b"wxyz")
+            result = run(folder, "4\n0\n")
+            self.assertIn("first.bin", result.stdout)
+            self.assertIn("copy.bin", result.stdout)
+            self.assertNotIn("different.bin", result.stdout)
+
     def test_undo_rejects_paths_outside_selected_folder(self):
         with tempfile.TemporaryDirectory() as location:
             folder = pathlib.Path(location)
