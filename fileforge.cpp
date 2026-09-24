@@ -21,7 +21,7 @@ std::string category(const fs::path& p){
 }
 std::string sizeText(uintmax_t n){std::ostringstream s;if(n>=1024*1024)s<<std::fixed<<std::setprecision(1)<<n/(1024.0*1024)<<" MB";else if(n>=1024)s<<std::fixed<<std::setprecision(1)<<n/1024.0<<" KB";else s<<n<<" B";return s.str();}
 fs::path collisionSafe(fs::path p){if(!fs::exists(p))return p;auto dir=p.parent_path();auto stem=p.stem().string();auto ext=p.extension().string();for(int i=1;;++i){fs::path c=dir/(stem+" ("+std::to_string(i)+")"+ext);if(!fs::exists(c))return c;}}
-std::vector<fs::path> filesIn(const fs::path& dir){std::vector<fs::path> v;for(auto& e:fs::directory_iterator(dir))if(e.is_regular_file())v.push_back(e.path());std::sort(v.begin(),v.end());return v;}
+std::vector<fs::path> filesIn(const fs::path& dir){std::vector<fs::path> v;for(auto& e:fs::directory_iterator(dir))if(e.is_regular_file() && !e.is_symlink())v.push_back(e.path());std::sort(v.begin(),v.end());return v;}
 void scan(const fs::path& dir){auto files=filesIn(dir);std::map<std::string,int> counts;uintmax_t total=0;std::cout<<"\nFILES\n------------------------------------------------------------\n";for(auto& p:files){auto n=fs::file_size(p);total+=n;counts[category(p)]++;std::cout<<std::left<<std::setw(32)<<p.filename().string()<<std::setw(14)<<category(p)<<sizeText(n)<<"\n";}std::cout<<"------------------------------------------------------------\n"<<files.size()<<" files • "<<sizeText(total)<<" total\n";for(auto& [c,n]:counts)std::cout<<"  "<<c<<": "<<n<<"\n";}
 const char* undoName=".fileforge_undo.log";
 void organize(const fs::path& dir){
@@ -60,6 +60,18 @@ void undo(const fs::path& dir){
         moves.emplace_back(from,to);
     }
     log.close();
+    const fs::path root=fs::absolute(dir).lexically_normal();
+    for(const auto& move:moves){
+        const fs::path source=fs::absolute(move.first).lexically_normal();
+        const fs::path destination=fs::absolute(move.second).lexically_normal();
+        if(destination.parent_path()!=root
+           || source.parent_path().parent_path()!=root
+           || source.parent_path().filename()!=category(destination)
+           || source==destination || fs::is_symlink(source)){
+            std::cerr<<"Unsafe undo record; no files moved.\n";
+            return;
+        }
+    }
     int restored=0;
     std::vector<std::pair<fs::path,fs::path>> pending;
     for(auto it=moves.rbegin();it!=moves.rend();++it){
