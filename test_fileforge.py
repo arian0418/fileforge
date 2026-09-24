@@ -1,9 +1,10 @@
+import os
 import pathlib
 import subprocess
 import tempfile
 import unittest
 
-BINARY = pathlib.Path(__file__).with_name("fileforge")
+BINARY = pathlib.Path(__file__).with_name("fileforge.exe" if os.name == "nt" else "fileforge")
 
 def run(folder, commands):
     return subprocess.run([str(BINARY)], input=str(folder) + "\n" + commands,
