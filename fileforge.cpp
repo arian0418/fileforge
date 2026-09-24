@@ -93,5 +93,38 @@ void undo(const fs::path& dir){
     }
     std::cout<<"Restored "<<restored<<" files; "<<pending.size()<<" remain in the undo record.\n";
 }
-void duplicates(const fs::path& dir){auto files=filesIn(dir);std::map<uintmax_t,std::vector<fs::path>> groups;for(auto& p:files)if(p.filename()!=".fileforge_undo.log")groups[fs::file_size(p)].push_back(p);bool found=false;std::cout<<"\nPOSSIBLE DUPLICATES (same file size)\n";for(auto& [size,v]:groups)if(v.size()>1){found=true;std::cout<<"\n"<<sizeText(size)<<":\n";for(auto& p:v)std::cout<<"  "<<p.filename().string()<<"\n";}if(!found)std::cout<<"None found.\n";std::cout<<"Note: matching size identifies candidates, not guaranteed identical content.\n";}
-int main(){std::cout<<"========================================\n FileForge — C++ File Organizer\n========================================\nFolder path: ";std::string input;std::getline(std::cin,input);fs::path dir=input;if(!fs::exists(dir)||!fs::is_directory(dir)){std::cerr<<"Folder not found.\n";return 1;}while(true){std::cout<<"\n1. Scan folder\n2. Preview categories\n3. Organize files\n4. Find duplicate candidates\n5. Undo last organization\n0. Exit\nChoice: ";int choice;if(!(std::cin>>choice))break;if(choice==0)break;try{if(choice==1)scan(dir);else if(choice==2){std::cout<<"\nPREVIEW\n";for(auto& p:filesIn(dir))std::cout<<p.filename().string()<<" -> "<<category(p)<<"/\n";}else if(choice==3){std::cout<<"Organize top-level files into category folders? (y/n): ";char yes;std::cin>>yes;if(yes=='y'||yes=='Y')organize(dir);}else if(choice==4)duplicates(dir);else if(choice==5)undo(dir);}catch(const std::exception& e){std::cerr<<"Error: "<<e.what()<<"\n";}}}
+bool sameContents(const fs::path& a,const fs::path& b){
+    std::ifstream left(a,std::ios::binary),right(b,std::ios::binary);
+    if(!left || !right)throw std::runtime_error("Could not read files for duplicate comparison.");
+    char l[16384],r[16384];
+    while(left && right){
+        left.read(l,sizeof(l));right.read(r,sizeof(r));
+        if(left.gcount()!=right.gcount() || !std::equal(l,l+left.gcount(),r))return false;
+    }
+    if(left.bad() || right.bad())throw std::runtime_error("Duplicate comparison failed.");
+    return true;
+}
+void duplicates(const fs::path& dir){
+    auto files=filesIn(dir);
+    std::map<uintmax_t,std::vector<fs::path>> bySize;
+    for(const auto& file:files)if(file.filename()!=undoName)bySize[fs::file_size(file)].push_back(file);
+    bool found=false;
+    std::cout<<"\nEXACT DUPLICATES (matching size and contents)\n";
+    for(const auto& [size,candidates]:bySize){
+        if(candidates.size()<2)continue;
+        std::vector<std::vector<fs::path>> groups;
+        for(const auto& candidate:candidates){
+            bool matched=false;
+            for(auto& group:groups)if(sameContents(candidate,group.front())){
+                group.push_back(candidate);matched=true;break;
+            }
+            if(!matched)groups.push_back({candidate});
+        }
+        for(const auto& group:groups)if(group.size()>1){
+            found=true;std::cout<<"\n"<<sizeText(size)<<":\n";
+            for(const auto& file:group)std::cout<<"  "<<file.filename().string()<<"\n";
+        }
+    }
+    if(!found)std::cout<<"None found.\n";
+}
+int main(){std::cout<<"========================================\n FileForge — C++ File Organizer\n========================================\nFolder path: ";std::string input;std::getline(std::cin,input);fs::path dir=input;if(!fs::exists(dir)||!fs::is_directory(dir)){std::cerr<<"Folder not found.\n";return 1;}while(true){std::cout<<"\n1. Scan folder\n2. Preview categories\n3. Organize files\n4. Find exact duplicates\n5. Undo last organization\n0. Exit\nChoice: ";int choice;if(!(std::cin>>choice))break;if(choice==0)break;try{if(choice==1)scan(dir);else if(choice==2){std::cout<<"\nPREVIEW\n";for(auto& p:filesIn(dir))std::cout<<p.filename().string()<<" -> "<<category(p)<<"/\n";}else if(choice==3){std::cout<<"Organize top-level files into category folders? (y/n): ";char yes;std::cin>>yes;if(yes=='y'||yes=='Y')organize(dir);}else if(choice==4)duplicates(dir);else if(choice==5)undo(dir);}catch(const std::exception& e){std::cerr<<"Error: "<<e.what()<<"\n";}}}
