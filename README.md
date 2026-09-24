@@ -19,7 +19,8 @@ It uses the C++17 standard library, especially `std::filesystem`, containers, st
 - Organize into Images, Documents, Videos, Audio, Archives, Code, and Other
 - Collision-safe file naming
 - Duplicate-candidate detection by file size
-- Undo the most recent organization using a local log
+- Undo the most recent organization using a local log; incomplete restores keep pending entries for retry
+- Refuse a new organization while an undo record exists
 - Storage summary
 
 Duplicate detection intentionally reports **candidates** when sizes match; it does not claim the files are byte-for-byte identical.
