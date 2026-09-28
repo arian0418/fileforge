@@ -2,9 +2,9 @@
 
 A desktop workspace for understanding and organizing a folder. A **Python/Tkinter interface** uses a **C++17 engine** for scanning, exact duplicate detection, previewed file moves, and recoverable undo. The original console interface remains available.
 
-![FileForge desktop](docs/screenshot.png)
+![FileForge on Windows at first launch](docs/screenshot.png)
 
-The screenshot shows a sample folder with files selected. On first launch, choose your own folder to populate the workspace. It was captured on Linux; Windows fonts and window controls follow your system.
+This Windows screenshot shows the app before a folder is selected. Choose a folder to see its files, preview moves, and check duplicates.
 
 ## Run
 
