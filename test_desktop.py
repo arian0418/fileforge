@@ -83,6 +83,11 @@ class DesktopTests(unittest.TestCase):
         self.root.update()
         self.assertFalse(self.app.runner.busy, "UI operation did not finish")
 
+    def test_first_launch_shows_folder_prompt_instead_of_empty_results(self):
+        app = self.make_app()
+        self.assertTrue(app.files_empty_panel.winfo_ismapped())
+        self.assertFalse(app.files_tree.winfo_ismapped())
+
     def test_ui_scan_search_sort_preview_cancel_and_roundtrip(self):
         (self.folder / "report.txt").write_text("report")
         (self.folder / "photo.png").write_bytes(b"image")
@@ -91,6 +96,8 @@ class DesktopTests(unittest.TestCase):
         app.load_folder(self.folder)
         self.wait_idle()
         self.assertEqual(len(app.files_tree.get_children()), 3)
+        self.assertTrue(app.files_tree.winfo_ismapped())
+        self.assertFalse(app.files_empty_panel.winfo_ismapped())
         app.search_var.set("report")
         self.root.update()
         self.assertEqual(len(app.files_tree.get_children()), 1)
