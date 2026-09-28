@@ -122,6 +122,7 @@ class FileForgeApp:
 
     def _styles(self):
         family = "Segoe UI" if os.name == "nt" else "DejaVu Sans"
+        self.ui_family = family
         for named in ("TkDefaultFont", "TkTextFont", "TkMenuFont"):
             font.nametofont(named).configure(family=family, size=10)
         style = ttk.Style(self.root)
@@ -166,12 +167,12 @@ class FileForgeApp:
         sidebar.rowconfigure(6, weight=1)
         brand = tk.Frame(sidebar, background=SIDEBAR)
         brand.grid(row=0, column=0, sticky="ew", padx=22, pady=(28, 30))
-        tk.Label(brand, text="F", font=("DejaVu Sans", 17, "bold"), background="#D7E9DD",
+        tk.Label(brand, text="F", font=(self.ui_family, 17, "bold"), background="#D7E9DD",
                  foreground="#153C32", width=2, pady=3).pack(side="left")
-        tk.Label(brand, text="FileForge", font=("DejaVu Sans", 14, "bold"), background=SIDEBAR,
+        tk.Label(brand, text="FileForge", font=(self.ui_family, 14, "bold"), background=SIDEBAR,
                  foreground="white").pack(side="left", padx=(9, 0))
         tk.Label(sidebar, text="YOUR WORKSPACE", background=SIDEBAR, foreground="#91ABB7",
-                 font=("DejaVu Sans", 8, "bold"), anchor="w").grid(row=1, column=0, sticky="ew", padx=26, pady=(0, 12))
+                 font=(self.ui_family, 8, "bold"), anchor="w").grid(row=1, column=0, sticky="ew", padx=26, pady=(0, 12))
         self.nav_buttons = {}
         for index, (key, label, action) in enumerate((
             ("files", "01    All files", lambda: self.show_page("files")),
@@ -184,9 +185,9 @@ class FileForgeApp:
         self.undo_button = ttk.Button(sidebar, text="Undo last organization", command=self.undo_files, style="Nav.TButton")
         self.undo_button.grid(row=5, column=0, sticky="ew", padx=12, pady=(24, 0))
         tk.Label(sidebar, text="A little order.\nA lot more space.", justify="left", anchor="w", background=SIDEBAR,
-                 foreground="#E4EDEC", font=("DejaVu Sans", 11)).grid(row=7, column=0, sticky="ew", padx=26, pady=(0, 16))
+                 foreground="#E4EDEC", font=(self.ui_family, 11)).grid(row=7, column=0, sticky="ew", padx=26, pady=(0, 16))
         tk.Label(sidebar, text="C++ engine · Python desktop\nv2.0  /  LOCAL FILES ONLY", justify="left", background=SIDEBAR,
-                 foreground="#91ABB7", font=("DejaVu Sans", 8)).grid(row=8, column=0, sticky="w", padx=26, pady=(0, 24))
+                 foreground="#91ABB7", font=(self.ui_family, 8)).grid(row=8, column=0, sticky="w", padx=26, pady=(0, 24))
 
         main = ttk.Frame(self.root, padding=(28, 25, 28, 18))
         main.grid(row=0, column=1, sticky="nsew")
@@ -200,7 +201,7 @@ class FileForgeApp:
         picker = ttk.Frame(main, style="Card.TFrame", padding=14)
         picker.grid(row=1, column=0, sticky="ew")
         picker.columnconfigure(0, weight=1)
-        ttk.Label(picker, text="WORKING FOLDER", style="CardMuted.TLabel", font=("DejaVu Sans", 8, "bold")).grid(row=0, column=0, sticky="w")
+        ttk.Label(picker, text="WORKING FOLDER", style="CardMuted.TLabel", font=(self.ui_family, 8, "bold")).grid(row=0, column=0, sticky="w")
         self.folder_var = tk.StringVar(value="Choose a folder to get started")
         self.folder_entry = ttk.Entry(picker, textvariable=self.folder_var, state="readonly", takefocus=True)
         self.folder_entry.grid(row=1, column=0, sticky="ew", pady=(5, 0), padx=(0, 12))
@@ -215,11 +216,11 @@ class FileForgeApp:
             metrics.columnconfigure(index, weight=1, uniform="metrics")
             card = ttk.Frame(metrics, padding=(17, 13), style="Card.TFrame")
             card.grid(row=0, column=index, sticky="nsew", padx=(0 if index == 0 else 5, 0 if index == 2 else 5))
-            ttk.Label(card, text=label, style="CardMuted.TLabel", font=("DejaVu Sans", 8, "bold")).pack(anchor="w")
+            ttk.Label(card, text=label, style="CardMuted.TLabel", font=(self.ui_family, 8, "bold")).pack(anchor="w")
             variable = tk.StringVar(value="—")
             self.metric_vars.append(variable)
             ttk.Label(card, textvariable=variable, style="Number.TLabel").pack(anchor="w", pady=(3, 2))
-            ttk.Label(card, text=hint, style="CardMuted.TLabel", font=("DejaVu Sans", 8)).pack(anchor="w")
+            ttk.Label(card, text=hint, style="CardMuted.TLabel", font=(self.ui_family, 8)).pack(anchor="w")
         self.scope_var = tk.StringVar(value="Top-level files only. Hidden files, settings and symlinks stay where they are.")
         ttk.Label(main, textvariable=self.scope_var, style="Muted.TLabel", wraplength=820).grid(row=3, column=0, sticky="w", pady=(0, 14))
         self.pages = {}
@@ -284,10 +285,23 @@ class FileForgeApp:
         self.search_var.trace_add("write", lambda *_: self.render_files())
         self.category_var.trace_add("write", lambda *_: self.render_files())
         self.files_tree = self._table(page, (("name", "NAME ↑", 380), ("category", "CATEGORY", 130), ("size", "SIZE", 100)), 2)
+        self.files_empty_panel = ttk.Frame(page, style="Card.TFrame")
+        self.files_empty_panel.grid(row=2, column=0, sticky="nsew")
+        welcome = ttk.Frame(self.files_empty_panel, style="Card.TFrame", padding=24)
+        welcome.place(relx=0.5, rely=0.4, anchor="center")
+        ttk.Label(welcome, text="Start with a folder", style="Card.TLabel",
+                  font=(self.ui_family, 20, "bold")).pack(pady=(0, 10))
+        ttk.Label(welcome, text="Choose a folder to see its files, check duplicates, and preview every move.",
+                  style="CardMuted.TLabel", wraplength=430, justify="center").pack(pady=(0, 20))
+        ttk.Button(welcome, text="Choose a folder", command=self.choose_folder,
+                   style="Primary.TButton").pack()
         for column in ("name", "category", "size"):
             self.files_tree.heading(column, command=lambda key=column: self.sort_files(key))
         self.files_empty_var = tk.StringVar(value="Choose a folder above. Your eligible files will appear here.")
-        ttk.Label(page, textvariable=self.files_empty_var, style="Muted.TLabel").grid(row=3, column=0, sticky="w", pady=(10, 0))
+        self.files_count_label = ttk.Label(page, textvariable=self.files_empty_var, style="Muted.TLabel")
+        self.files_count_label.grid(row=3, column=0, sticky="w", pady=(10, 0))
+        self.files_count_label.grid_remove()
+        self.render_files()
 
     def _build_preview(self):
         page = self.pages["preview"]
@@ -429,7 +443,13 @@ class FileForgeApp:
         self.files_tree.delete(*self.files_tree.get_children())
         if not self.scan_data:
             self.files_empty_var.set("Choose a folder above. Your eligible files will appear here.")
+            self.files_tree.master.grid_remove()
+            self.files_empty_panel.grid()
+            self.files_count_label.grid_remove()
             return
+        self.files_empty_panel.grid_remove()
+        self.files_tree.master.grid()
+        self.files_count_label.grid()
         query = self.search_var.get().casefold().strip()
         category = self.category_var.get()
         files = [item for item in self.scan_data["files"] if query in item["name"].casefold()
