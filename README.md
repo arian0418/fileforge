@@ -4,6 +4,8 @@ A desktop workspace for understanding and organizing a folder. A **Python/Tkinte
 
 ![FileForge desktop](docs/screenshot.png)
 
+The screenshot shows a sample folder with files selected. On first launch, choose your own folder to populate the workspace. It was captured on Linux; Windows fonts and window controls follow your system.
+
 ## Run
 
 You need **Python 3.10+ with Tkinter** and a **C++17 compiler**. There are no pip dependencies for the app.
